@@ -25,7 +25,7 @@ contract CedenMintPass is ONFT721 {
         stableToken = IERC20(_stableTokenAddress);
         price = 500 * 10**_stableTokenDecimals;
         nextMintId = 0;
-        MAX_MINT_ID = 10000;
+        MAX_MINT_ID = 4444;
         exclusiveWindow = true;
         feeCollectorAddress = _feeCollectorAddress;
     }
