@@ -5,8 +5,9 @@ pragma solidity ^0.8.0;
 import "@layerzerolabs/solidity-examples/contracts/token/onft/ONFT721.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/token/common/ERC2981.sol";
 
-contract CedenMintPass is ONFT721 {
+contract CedenMintPass is ONFT721, ERC2981 {
     using SafeERC20 for IERC20;
 
     mapping(address => uint) public freeMintList;
@@ -28,6 +29,7 @@ contract CedenMintPass is ONFT721 {
         MAX_MINT_ID = 4444;
         exclusiveWindow = true;
         feeCollectorAddress = _feeCollectorAddress;
+        _setDefaultRoyalty(feeCollectorAddress, 269);
     }
 
     function mint(uint _quantity) external {
@@ -77,5 +79,9 @@ contract CedenMintPass is ONFT721 {
 
     function _baseURI() internal view override returns (string memory) {
         return baseTokenURI;
+    }
+
+    function supportsInterface(bytes4 interfaceId) public view override(ONFT721, ERC2981) returns (bool) {
+        return ONFT721.supportsInterface(interfaceId) || ERC2981.supportsInterface(interfaceId);
     }
 }
