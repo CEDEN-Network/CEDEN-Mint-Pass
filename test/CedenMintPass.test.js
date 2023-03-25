@@ -1,5 +1,8 @@
 const { expect } = require("chai")
 const { ethers } = require("hardhat")
+const Web3 = require("web3")
+const web3 = new Web3()
+
 
 describe.only("CedenMintPass: ", function () {
     const chainId_A = 1
@@ -16,7 +19,7 @@ describe.only("CedenMintPass: ", function () {
         owner = (await ethers.getSigners())[0]
         warlock = (await ethers.getSigners())[1]
         LZEndpointMock = await ethers.getContractFactory("CedenLZEndpointMock")
-        ONFT = await ethers.getContractFactory("CedenMintPass")
+        ONFT = await ethers.getContractFactory("CedenMintPassMock")
         MockToken = await ethers.getContractFactory("CedenMockToken")
     })
 
@@ -27,7 +30,6 @@ describe.only("CedenMintPass: ", function () {
         usdcTokenA = await MockToken.deploy("USDC", "USDC")
         usdcTokenB = await MockToken.deploy("USDC", "USDC")
         //
-
         // generate a proxy to allow it to go ONFT
         ONFT_A = await ONFT.deploy(name, symbol, minGasToStore, lzEndpointMockA.address, usdcTokenA.address, 8, warlock.address)
         ONFT_B = await ONFT.deploy(name, symbol, minGasToStore, lzEndpointMockB.address, usdcTokenB.address, 8, warlock.address)
@@ -87,9 +89,12 @@ describe.only("CedenMintPass: ", function () {
         expect(await ONFT_A.ownerOf(6)).to.be.equal(owner.address)
     })
 
-    it.skip("sendFrom() - your own tokens", async function () {
-        const tokenId = 123
-        await ONFT_A.mint(owner.address, tokenId)
+    it("sendFrom() - your own tokens", async function () {
+        // free minter gets 1
+        await ONFT_A.addToFreeMintList(owner.address, 1);
+
+        const tokenId = 1
+        await ONFT_A.mint(1)
 
         // verify the owner of the token is on the source chain
         expect(await ONFT_A.ownerOf(tokenId)).to.be.equal(owner.address)
@@ -144,9 +149,11 @@ describe.only("CedenMintPass: ", function () {
         expect(await ONFT_B.ownerOf(tokenId)).to.be.equal(ONFT_B.address)
     })
 
-    it.skip("sendFrom() - reverts if not owner on non proxy chain", async function () {
-        const tokenId = 123
-        await ONFT_A.mint(owner.address, tokenId)
+    it("sendFrom() - reverts if not owner on non proxy chain", async function () {
+        // free minter gets 1
+        await ONFT_A.addToFreeMintList(owner.address, 1);
+        const tokenId = 1
+        await ONFT_A.mint(1)
 
         // approve the proxy to swap your token
         await ONFT_A.approve(ONFT_A.address, tokenId)
@@ -176,9 +183,11 @@ describe.only("CedenMintPass: ", function () {
         ).to.be.revertedWith("ONFT721: send caller is not owner nor approved")
     })
 
-    it.skip("sendFrom() - on behalf of other user", async function () {
-        const tokenId = 123
-        await ONFT_A.mint(owner.address, tokenId)
+    it("sendFrom() - on behalf of other user", async function () {
+        // free minter gets 1
+        await ONFT_A.addToFreeMintList(owner.address, 1);
+        const tokenId = 1
+        await ONFT_A.mint(1)
 
         // approve the proxy to swap your token
         await ONFT_A.approve(ONFT_A.address, tokenId)
@@ -216,9 +225,12 @@ describe.only("CedenMintPass: ", function () {
         expect(await ONFT_A.ownerOf(tokenId)).to.be.equal(warlock.address)
     })
 
-    it.skip("sendFrom() - reverts if contract is approved, but not the sending user", async function () {
-        const tokenId = 123
-        await ONFT_A.mint(owner.address, tokenId)
+    it("sendFrom() - reverts if contract is approved, but not the sending user", async function () {
+        // free minter gets 1
+        await ONFT_A.addToFreeMintList(owner.address, 1);
+
+        const tokenId = 1
+        await ONFT_A.mint(1)
 
         // approve the proxy to swap your token
         await ONFT_A.approve(ONFT_A.address, tokenId)
@@ -251,9 +263,12 @@ describe.only("CedenMintPass: ", function () {
         ).to.be.revertedWith("ONFT721: send caller is not owner nor approved")
     })
 
-    it.skip("sendFrom() - reverts if not approved on non proxy chain", async function () {
-        const tokenId = 123
-        await ONFT_A.mint(owner.address, tokenId)
+    it("sendFrom() - reverts if not approved on non proxy chain", async function () {
+        // free minter gets 1
+        await ONFT_A.addToFreeMintList(owner.address, 1);
+
+        const tokenId = 1
+        await ONFT_A.mint(1)
 
         // approve the proxy to swap your token
         await ONFT_A.approve(ONFT_A.address, tokenId)
@@ -283,12 +298,18 @@ describe.only("CedenMintPass: ", function () {
         ).to.be.revertedWith("ONFT721: send caller is not owner nor approved")
     })
 
-    it.skip("sendFrom() - reverts if sender does not own token", async function () {
-        const tokenIdA = 123
-        const tokenIdB = 456
+    it("sendFrom() - reverts if sender does not own token", async function () {
+        // free minter gets 1
+        await ONFT_A.addToFreeMintList(owner.address, 1);
+
+        // free minter gets 1
+        await ONFT_A.addToFreeMintList(warlock.address, 1);
+
+        const tokenIdA = 1
+        const tokenIdB = 2
         // mint to both owners
-        await ONFT_A.mint(owner.address, tokenIdA)
-        await ONFT_A.mint(warlock.address, tokenIdB)
+        await ONFT_A.mint(1)
+        await ONFT_A.connect(warlock).mint(1)
 
         // approve owner.address to transfer, but not the other
         await ONFT_A.setApprovalForAll(ONFT_A.address, true)
@@ -317,23 +338,23 @@ describe.only("CedenMintPass: ", function () {
         ).to.be.revertedWith("ONFT721: send caller is not owner nor approved")
     })
 
-    it.skip("sendBatchFrom()", async function () {
+    it("sendBatchFrom()", async function () {
+        // free minter gets 1
+        await ONFT_A.addToFreeMintList(warlock.address, 10);
+
         await ONFT_A.setMinGasToTransferAndStore(400000)
         await ONFT_B.setMinGasToTransferAndStore(400000)
 
         const tokenIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
         // mint to owner
-        for (let tokenId of tokenIds) {
-            await ONFT_A.mint(warlock.address, tokenId)
-        }
+        await ONFT_A.connect(warlock).mint(10)
 
         // approve owner.address to transfer
         await ONFT_A.connect(warlock).setApprovalForAll(ONFT_A.address, true)
 
-        // expected event params
         const payload = ethers.utils.defaultAbiCoder.encode(["bytes", "uint[]"], [warlock.address, tokenIds])
-        const hashedPayload = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(payload))
+        const hashedPayload = web3.utils.keccak256(payload)
 
         let adapterParams = ethers.utils.solidityPack(["uint16", "uint256"], [1, 200000])
 
@@ -348,7 +369,7 @@ describe.only("CedenMintPass: ", function () {
             tokenIds,
             warlock.address,
             ethers.constants.AddressZero,
-            adapterParams, // TODO might need to change this
+            adapterParams,
             { value: nativeFee }
         )).to.emit(ONFT_B, "CreditStored").withArgs(hashedPayload, payload)
 
@@ -383,7 +404,10 @@ describe.only("CedenMintPass: ", function () {
         await expect(ONFT_B.clearCredits(payload)).to.be.revertedWith("ONFT721: no credits stored")
     })
 
-    it.skip("sendBatchFrom() - large batch", async function () {
+    it("sendBatchFrom() - large batch", async function () {
+        // free minter gets 1
+        await ONFT_A.addToFreeMintList(warlock.address, 300);
+
         await ONFT_A.setMinGasToTransferAndStore(400000)
         await ONFT_B.setMinGasToTransferAndStore(400000)
 
@@ -394,16 +418,14 @@ describe.only("CedenMintPass: ", function () {
         }
 
         // mint to owner
-        for (let tokenId of tokenIds) {
-            await ONFT_A.mint(warlock.address, tokenId)
-        }
+        await ONFT_A.connect(warlock).mint(300)
 
         // approve owner.address to transfer
         await ONFT_A.connect(warlock).setApprovalForAll(ONFT_A.address, true)
 
         // expected event params
         const payload = ethers.utils.defaultAbiCoder.encode(["bytes", "uint[]"], [warlock.address, tokenIds])
-        const hashedPayload = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(payload))
+        const hashedPayload = web3.utils.keccak256(payload)
 
         let adapterParams = ethers.utils.solidityPack(["uint16", "uint256"], [1, 400000])
 
@@ -418,7 +440,7 @@ describe.only("CedenMintPass: ", function () {
             tokenIds,
             warlock.address,
             ethers.constants.AddressZero,
-            adapterParams, // TODO might need to change this
+            adapterParams,
             { value: nativeFee }
         )).to.emit(ONFT_B, "CreditStored").withArgs(hashedPayload, payload)
 
