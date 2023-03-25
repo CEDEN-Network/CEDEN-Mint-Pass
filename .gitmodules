@@ -1,3 +1,0 @@
-[submodule "solidity-examples"]
-	path = layer-zero
-	url = git@github.com:LayerZero-Labs/solidity-examples.git
