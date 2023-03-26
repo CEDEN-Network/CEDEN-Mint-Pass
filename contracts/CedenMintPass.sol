@@ -6,9 +6,10 @@ import "@layerzerolabs/solidity-examples/contracts/token/onft/ONFT721.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/common/ERC2981.sol";
-import "operator-filter-registry/src/DefaultOperatorFilterer.sol";
+import "operator-filter-registry/src/UpdatableOperatorFilterer.sol";
+import "operator-filter-registry/src/RevokableDefaultOperatorFilterer.sol";
 
-contract CedenMintPass is ONFT721, ERC2981, DefaultOperatorFilterer {
+contract CedenMintPass is ONFT721, ERC2981, RevokableDefaultOperatorFilterer {
     using SafeERC20 for IERC20;
 
     mapping(address => uint) public freeMintList;
@@ -124,5 +125,14 @@ contract CedenMintPass is ONFT721, ERC2981, DefaultOperatorFilterer {
         onlyAllowedOperator(from)
     {
         super.safeTransferFrom(from, to, tokenId, data);
+    }
+
+    function owner()
+        public
+        view
+        override(Ownable, UpdatableOperatorFilterer)
+        returns (address)
+    {
+        return Ownable.owner();
     }
 }
