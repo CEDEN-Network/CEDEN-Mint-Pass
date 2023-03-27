@@ -34,6 +34,73 @@ contract CedenMintPass is ONFT721, ERC2981, RevokableDefaultOperatorFilterer {
         _setDefaultRoyalty(feeCollectorAddress, 269);
     }
 
+    function _baseURI() internal view override returns (string memory) {
+        return baseTokenURI;
+    }
+
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        override(ONFT721, ERC2981)
+        returns (bool)
+    {
+        return ONFT721.supportsInterface(interfaceId) || ERC2981.supportsInterface(interfaceId);
+    }
+
+    function owner()
+        public
+        view
+        override(Ownable, UpdatableOperatorFilterer)
+        returns (address)
+    {
+        return Ownable.owner();
+    }
+
+    function tokenURI(uint256 tokenId) public view override returns (string memory) {
+        _requireMinted(tokenId);
+        return _baseURI();
+    }
+
+    function setApprovalForAll(address operator, bool approved)
+        public
+        override(ERC721, IERC721)
+        onlyAllowedOperatorApproval(operator)
+    {
+        super.setApprovalForAll(operator, approved);
+    }
+
+    function approve(address operator, uint256 tokenId)
+        public
+        override(ERC721, IERC721)
+        onlyAllowedOperatorApproval(operator)
+    {
+        super.approve(operator, tokenId);
+    }
+
+    function transferFrom(address from, address to, uint256 tokenId)
+        public
+        override(ERC721, IERC721)
+        onlyAllowedOperator(from)
+    {
+        super.transferFrom(from, to, tokenId);
+    }
+
+    function safeTransferFrom(address from, address to, uint256 tokenId)
+        public
+        override(ERC721, IERC721)
+        onlyAllowedOperator(from)
+    {
+        super.safeTransferFrom(from, to, tokenId);
+    }
+
+    function safeTransferFrom(address from, address to, uint256 tokenId, bytes memory data)
+        public
+        override(ERC721, IERC721)
+        onlyAllowedOperator(from)
+    {
+        super.safeTransferFrom(from, to, tokenId, data);
+    }
+
     function mint(uint _quantity) external {
         //check if address has free mints left
         if(freeMintList[msg.sender] >= _quantity) {
@@ -77,67 +144,5 @@ contract CedenMintPass is ONFT721, ERC2981, RevokableDefaultOperatorFilterer {
 
     function setExclusiveWindow(bool _exclusiveWindow) public onlyOwner {
         exclusiveWindow = _exclusiveWindow;
-    }
-
-    function _baseURI() internal view override returns (string memory) {
-        return baseTokenURI;
-    }
-
-    function supportsInterface(bytes4 interfaceId) public view override(ONFT721, ERC2981) returns (bool) {
-        return ONFT721.supportsInterface(interfaceId) || ERC2981.supportsInterface(interfaceId);
-    }
-
-    function setApprovalForAll(address operator, bool approved)
-        public
-        override(ERC721, IERC721)
-        onlyAllowedOperatorApproval(operator)
-    {
-        super.setApprovalForAll(operator, approved);
-    }
-
-    function approve(address operator, uint256 tokenId)
-        public
-        override(ERC721, IERC721)
-        onlyAllowedOperatorApproval(operator)
-    {
-        super.approve(operator, tokenId);
-    }
-
-    function transferFrom(address from, address to, uint256 tokenId)
-        public
-        override(ERC721, IERC721)
-        onlyAllowedOperator(from)
-    {
-        super.transferFrom(from, to, tokenId);
-    }
-
-    function safeTransferFrom(address from, address to, uint256 tokenId)
-        public
-        override(ERC721, IERC721)
-        onlyAllowedOperator(from)
-    {
-        super.safeTransferFrom(from, to, tokenId);
-    }
-
-    function safeTransferFrom(address from, address to, uint256 tokenId, bytes memory data)
-        public
-        override(ERC721, IERC721)
-        onlyAllowedOperator(from)
-    {
-        super.safeTransferFrom(from, to, tokenId, data);
-    }
-
-    function owner()
-        public
-        view
-        override(Ownable, UpdatableOperatorFilterer)
-        returns (address)
-    {
-        return Ownable.owner();
-    }
-
-    function tokenURI(uint256 tokenId) public view override returns (string memory) {
-        _requireMinted(tokenId);
-        return _baseURI();
     }
 }
