@@ -5,8 +5,11 @@ pragma solidity ^0.8.0;
 import "@layerzerolabs/solidity-examples/contracts/token/onft/ONFT721.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/token/common/ERC2981.sol";
+import "operator-filter-registry/src/UpdatableOperatorFilterer.sol";
+import "operator-filter-registry/src/RevokableDefaultOperatorFilterer.sol";
 
-contract CedenMintPass is ONFT721 {
+contract CedenMintPass is ONFT721, ERC2981, RevokableDefaultOperatorFilterer {
     using SafeERC20 for IERC20;
 
     mapping(address => uint) public freeMintList;
@@ -28,6 +31,7 @@ contract CedenMintPass is ONFT721 {
         MAX_MINT_ID = 4444;
         exclusiveWindow = true;
         feeCollectorAddress = _feeCollectorAddress;
+        _setDefaultRoyalty(feeCollectorAddress, 269);
     }
 
     function mint(uint _quantity) external {
@@ -77,5 +81,58 @@ contract CedenMintPass is ONFT721 {
 
     function _baseURI() internal view override returns (string memory) {
         return baseTokenURI;
+    }
+
+    function supportsInterface(bytes4 interfaceId) public view override(ONFT721, ERC2981) returns (bool) {
+        return ONFT721.supportsInterface(interfaceId) || ERC2981.supportsInterface(interfaceId);
+    }
+
+    function setApprovalForAll(address operator, bool approved)
+        public
+        override(ERC721, IERC721)
+        onlyAllowedOperatorApproval(operator)
+    {
+        super.setApprovalForAll(operator, approved);
+    }
+
+    function approve(address operator, uint256 tokenId)
+        public
+        override(ERC721, IERC721)
+        onlyAllowedOperatorApproval(operator)
+    {
+        super.approve(operator, tokenId);
+    }
+
+    function transferFrom(address from, address to, uint256 tokenId)
+        public
+        override(ERC721, IERC721)
+        onlyAllowedOperator(from)
+    {
+        super.transferFrom(from, to, tokenId);
+    }
+
+    function safeTransferFrom(address from, address to, uint256 tokenId)
+        public
+        override(ERC721, IERC721)
+        onlyAllowedOperator(from)
+    {
+        super.safeTransferFrom(from, to, tokenId);
+    }
+
+    function safeTransferFrom(address from, address to, uint256 tokenId, bytes memory data)
+        public
+        override(ERC721, IERC721)
+        onlyAllowedOperator(from)
+    {
+        super.safeTransferFrom(from, to, tokenId, data);
+    }
+
+    function owner()
+        public
+        view
+        override(Ownable, UpdatableOperatorFilterer)
+        returns (address)
+    {
+        return Ownable.owner();
     }
 }
