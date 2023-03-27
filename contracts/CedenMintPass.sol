@@ -2,35 +2,39 @@
 
 pragma solidity ^0.8.0;
 
-import "@layerzerolabs/solidity-examples/contracts/token/onft/ONFT721.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/token/common/ERC2981.sol";
-import "operator-filter-registry/src/UpdatableOperatorFilterer.sol";
-import "operator-filter-registry/src/RevokableDefaultOperatorFilterer.sol";
+import "@layerzerolabs/solidity-examples/contracts/contracts-upgradable/token/ONFT721/ONFT721Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/common/ERC2981Upgradeable.sol";
+import "operator-filter-registry/src/upgradeable/RevokableDefaultOperatorFiltererUpgradeable.sol";
 
-contract CedenMintPass is ONFT721, ERC2981, RevokableDefaultOperatorFilterer {
-    using SafeERC20 for IERC20;
+contract CedenMintPass is Initializable, ONFT721Upgradeable, ERC2981Upgradeable, RevokableDefaultOperatorFiltererUpgradeable {
+    using SafeERC20Upgradeable for IERC20Upgradeable;
 
     mapping(address => uint) public freeMintList;
     mapping(address => uint) public allowList;
     mapping(address => uint) public openMint;
-    IERC20 public immutable stableToken;
+    IERC20Upgradeable public stableToken;
+    address public feeCollectorAddress;
     bool public exclusiveWindow;
     uint public freeMintsLeft;
     uint public price;
     uint public nextMintId;
-    uint immutable MAX_MINT_ID;
-    address public feeCollectorAddress;
+    uint public MAX_MINT_ID;
     string public baseTokenURI;
 
-    constructor(string memory _name, string memory _symbol, uint256 _minGasToStore, address _layerZeroEndpoint, address _stableTokenAddress, uint _stableTokenDecimals,  address _feeCollectorAddress) ONFT721(_name, _symbol, _minGasToStore, _layerZeroEndpoint) {
-        stableToken = IERC20(_stableTokenAddress);
+    function initialize(string memory _name, string memory _symbol, address _layerZeroEndpoint, address _stableTokenAddress, uint _stableTokenDecimals,  address _feeCollectorAddress) public initializer {
+        __ONFT721Upgradeable_init(_name, _symbol, _layerZeroEndpoint);
+        __ERC2981_init();
+        __RevokableDefaultOperatorFilterer_init();
+        __Ownable_init();
+        stableToken = IERC20Upgradeable(_stableTokenAddress);
+        feeCollectorAddress = _feeCollectorAddress;
+        exclusiveWindow = true;
         price = 500 * 10**_stableTokenDecimals;
         nextMintId = 0;
         MAX_MINT_ID = 4444;
-        exclusiveWindow = true;
-        feeCollectorAddress = _feeCollectorAddress;
         _setDefaultRoyalty(feeCollectorAddress, 269);
     }
 
@@ -41,19 +45,19 @@ contract CedenMintPass is ONFT721, ERC2981, RevokableDefaultOperatorFilterer {
     function supportsInterface(bytes4 interfaceId)
         public
         view
-        override(ONFT721, ERC2981)
+        override(ONFT721Upgradeable, ERC2981Upgradeable)
         returns (bool)
     {
-        return ONFT721.supportsInterface(interfaceId) || ERC2981.supportsInterface(interfaceId);
+        return ONFT721Upgradeable.supportsInterface(interfaceId) || ERC2981Upgradeable.supportsInterface(interfaceId);
     }
 
     function owner()
         public
         view
-        override(Ownable, UpdatableOperatorFilterer)
+        override(OwnableUpgradeable, RevokableOperatorFiltererUpgradeable)
         returns (address)
     {
-        return Ownable.owner();
+        return OwnableUpgradeable.owner();
     }
 
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
@@ -63,7 +67,7 @@ contract CedenMintPass is ONFT721, ERC2981, RevokableDefaultOperatorFilterer {
 
     function setApprovalForAll(address operator, bool approved)
         public
-        override(ERC721, IERC721)
+        override(ERC721Upgradeable, IERC721Upgradeable)
         onlyAllowedOperatorApproval(operator)
     {
         super.setApprovalForAll(operator, approved);
@@ -71,7 +75,7 @@ contract CedenMintPass is ONFT721, ERC2981, RevokableDefaultOperatorFilterer {
 
     function approve(address operator, uint256 tokenId)
         public
-        override(ERC721, IERC721)
+        override(ERC721Upgradeable, IERC721Upgradeable)
         onlyAllowedOperatorApproval(operator)
     {
         super.approve(operator, tokenId);
@@ -79,7 +83,7 @@ contract CedenMintPass is ONFT721, ERC2981, RevokableDefaultOperatorFilterer {
 
     function transferFrom(address from, address to, uint256 tokenId)
         public
-        override(ERC721, IERC721)
+        override(ERC721Upgradeable, IERC721Upgradeable)
         onlyAllowedOperator(from)
     {
         super.transferFrom(from, to, tokenId);
@@ -87,7 +91,7 @@ contract CedenMintPass is ONFT721, ERC2981, RevokableDefaultOperatorFilterer {
 
     function safeTransferFrom(address from, address to, uint256 tokenId)
         public
-        override(ERC721, IERC721)
+        override(ERC721Upgradeable, IERC721Upgradeable)
         onlyAllowedOperator(from)
     {
         super.safeTransferFrom(from, to, tokenId);
@@ -95,7 +99,7 @@ contract CedenMintPass is ONFT721, ERC2981, RevokableDefaultOperatorFilterer {
 
     function safeTransferFrom(address from, address to, uint256 tokenId, bytes memory data)
         public
-        override(ERC721, IERC721)
+        override(ERC721Upgradeable, IERC721Upgradeable)
         onlyAllowedOperator(from)
     {
         super.safeTransferFrom(from, to, tokenId, data);
@@ -150,4 +154,6 @@ contract CedenMintPass is ONFT721, ERC2981, RevokableDefaultOperatorFilterer {
     function setExclusiveWindow(bool _exclusiveWindow) public onlyOwner {
         exclusiveWindow = _exclusiveWindow;
     }
+
+    uint256[50] private __gap;
 }
