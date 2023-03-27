@@ -129,6 +129,11 @@ contract CedenMintPass is ONFT721, ERC2981, RevokableDefaultOperatorFilterer {
         freeMintList[_address] = _amount;
     }
 
+    function removeFromFreeMintList(address _address) external onlyOwner {
+        freeMintsLeft -= freeMintList[_address];
+        delete freeMintList[_address];
+    }
+
     function addToAllowList(address _address, uint _amount) external onlyOwner {
         require(_amount <= 10, "Allow List mint range is 1-10");
         allowList[_address] = _amount;
