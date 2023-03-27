@@ -135,4 +135,9 @@ contract CedenMintPass is ONFT721, ERC2981, RevokableDefaultOperatorFilterer {
     {
         return Ownable.owner();
     }
+
+    function tokenURI(uint256 tokenId) public view override returns (string memory) {
+        _requireMinted(tokenId);
+        return _baseURI();
+    }
 }
