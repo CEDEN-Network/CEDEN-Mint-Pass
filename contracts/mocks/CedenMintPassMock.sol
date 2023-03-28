@@ -2,9 +2,9 @@
 
 pragma solidity ^0.8.4;
 
-import "../CedenMintPass.sol";
+import "../CedenMintPassV1.sol";
 
-contract CedenMintPassMock is CedenMintPass {
+contract CedenMintPassMock is CedenMintPassV1 {
     // extra function needed for batch unit testing
     function rawOwnerOf(uint256 tokenId) public view returns (address) {
         if(_exists(tokenId)) {

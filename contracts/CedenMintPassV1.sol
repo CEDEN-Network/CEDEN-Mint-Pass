@@ -10,7 +10,7 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeab
 import "@openzeppelin/contracts-upgradeable/token/common/ERC2981Upgradeable.sol";
 import "operator-filter-registry/src/upgradeable/RevokableDefaultOperatorFiltererUpgradeable.sol";
 
-contract CedenMintPass is Initializable, ONFT721Upgradeable, ERC2981Upgradeable, RevokableDefaultOperatorFiltererUpgradeable {
+contract CedenMintPassV1 is Initializable, ONFT721Upgradeable, ERC2981Upgradeable, RevokableDefaultOperatorFiltererUpgradeable {
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
     mapping(address => uint) public freeMintList;

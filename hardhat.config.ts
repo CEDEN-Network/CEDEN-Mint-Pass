@@ -1,3 +1,6 @@
+import * as dotenv from 'dotenv';
+dotenv.config();
+
 import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
 import "@openzeppelin/hardhat-upgrades";
@@ -15,6 +18,16 @@ const config: HardhatUserConfig = {
         }
       }
     ],
+  },
+  networks: {
+    mainnet: {
+      url: process.env.MAINNET_URL ?? '',
+      accounts: process.env.MAINNET_PRIVATE_KEY !== undefined ? [process.env.MAINNET_PRIVATE_KEY] : [],
+    },
+    goerli: {
+      url: process.env.GOERLI_URL ?? '',
+      accounts: process.env.GOERLI_PRIVATE_KEY !== undefined ? [process.env.GOERLI_PRIVATE_KEY] : [],
+    }
   },
 };
 
