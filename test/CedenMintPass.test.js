@@ -1,5 +1,5 @@
 const { expect } = require("chai")
-const { ethers } = require("hardhat")
+const { ethers, upgrades } = require("hardhat")
 const Web3 = require("web3")
 const web3 = new Web3()
 
@@ -9,8 +9,8 @@ describe.only("CedenMintPass: ", function () {
     const chainId_B = 2
     const name = "CedenMintPass"
     const symbol = "CMP"
-    const minGasToStore = 150000
     const batchSizeLimit = 300
+    const minGasToStore = 150000
     const defaultAdapterParams = ethers.utils.solidityPack(["uint16", "uint256"], [1, 200000])
 
     let owner, warlock, lzEndpointMockA, lzEndpointMockB, LZEndpointMock, ONFT, ONFT_A, ONFT_B, MockToken, usdcTokenA, usdcTokenB
@@ -29,10 +29,10 @@ describe.only("CedenMintPass: ", function () {
 
         usdcTokenA = await MockToken.deploy("USDC", "USDC")
         usdcTokenB = await MockToken.deploy("USDC", "USDC")
-        //
+
         // generate a proxy to allow it to go ONFT
-        ONFT_A = await ONFT.deploy(name, symbol, minGasToStore, lzEndpointMockA.address, usdcTokenA.address, 8, warlock.address)
-        ONFT_B = await ONFT.deploy(name, symbol, minGasToStore, lzEndpointMockB.address, usdcTokenB.address, 8, warlock.address)
+        ONFT_A = await upgrades.deployProxy(ONFT, [name, symbol, minGasToStore, lzEndpointMockA.address, usdcTokenA.address, 8, warlock.address], { initializer: 'initialize' })
+        ONFT_B = await upgrades.deployProxy(ONFT, [name, symbol, minGasToStore, lzEndpointMockB.address, usdcTokenB.address, 8, warlock.address], { initializer: 'initialize' })
 
         // wire the lz endpoints to guide msgs back and forth
         lzEndpointMockA.setDestLzEndpoint(ONFT_B.address, lzEndpointMockB.address)
@@ -42,13 +42,14 @@ describe.only("CedenMintPass: ", function () {
         await ONFT_A.setTrustedRemote(chainId_B, ethers.utils.solidityPack(["address", "address"], [ONFT_B.address, ONFT_A.address]))
         await ONFT_B.setTrustedRemote(chainId_A, ethers.utils.solidityPack(["address", "address"], [ONFT_A.address, ONFT_B.address]))
 
-        // set batch size limit
+        // // set batch size limit
         await ONFT_A.setDstChainIdToBatchLimit(chainId_B, batchSizeLimit)
         await ONFT_B.setDstChainIdToBatchLimit(chainId_A, batchSizeLimit)
 
-        // set min dst gas for swap
+        // // set min dst gas for swap
         await ONFT_A.setMinDstGas(chainId_B, 1, 150000)
         await ONFT_B.setMinDstGas(chainId_A, 1, 150000)
+
     })
 
     it("mint() - try when not on free list or allow list during exclusiveWindow", async function () {
