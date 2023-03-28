@@ -29,7 +29,7 @@ describe.only("CedenMintPass: ", function () {
 
         usdcTokenA = await MockToken.deploy("USDC", "USDC")
         usdcTokenB = await MockToken.deploy("USDC", "USDC")
-        //
+
         // generate a proxy to allow it to go ONFT
         ONFT_A = await upgrades.deployProxy(ONFT, [name, symbol, minGasToStore, lzEndpointMockA.address, usdcTokenA.address, 8, warlock.address], { initializer: 'initialize' })
         ONFT_B = await upgrades.deployProxy(ONFT, [name, symbol, minGasToStore, lzEndpointMockB.address, usdcTokenB.address, 8, warlock.address], { initializer: 'initialize' })
@@ -42,11 +42,10 @@ describe.only("CedenMintPass: ", function () {
         await ONFT_A.setTrustedRemote(chainId_B, ethers.utils.solidityPack(["address", "address"], [ONFT_B.address, ONFT_A.address]))
         await ONFT_B.setTrustedRemote(chainId_A, ethers.utils.solidityPack(["address", "address"], [ONFT_A.address, ONFT_B.address]))
 
-        // FIXME: this is a hack to get the tests to pass
         // // set batch size limit
         await ONFT_A.setDstChainIdToBatchLimit(chainId_B, batchSizeLimit)
         await ONFT_B.setDstChainIdToBatchLimit(chainId_A, batchSizeLimit)
-        //
+
         // // set min dst gas for swap
         await ONFT_A.setMinDstGas(chainId_B, 1, 150000)
         await ONFT_B.setMinDstGas(chainId_A, 1, 150000)
