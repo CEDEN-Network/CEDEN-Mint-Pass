@@ -10,6 +10,7 @@ describe.only("CedenMintPass: ", function () {
     const name = "CedenMintPass"
     const symbol = "CMP"
     const batchSizeLimit = 300
+    const minGasToStore = 150000
     const defaultAdapterParams = ethers.utils.solidityPack(["uint16", "uint256"], [1, 200000])
 
     let owner, warlock, lzEndpointMockA, lzEndpointMockB, LZEndpointMock, ONFT, ONFT_A, ONFT_B, MockToken, usdcTokenA, usdcTokenB
@@ -30,8 +31,8 @@ describe.only("CedenMintPass: ", function () {
         usdcTokenB = await MockToken.deploy("USDC", "USDC")
         //
         // generate a proxy to allow it to go ONFT
-        ONFT_A = await upgrades.deployProxy(ONFT, [name, symbol, lzEndpointMockA.address, usdcTokenA.address, 8, warlock.address], { initializer: 'initialize' })
-        ONFT_B = await upgrades.deployProxy(ONFT, [name, symbol, lzEndpointMockB.address, usdcTokenB.address, 8, warlock.address], { initializer: 'initialize' })
+        ONFT_A = await upgrades.deployProxy(ONFT, [name, symbol, minGasToStore, lzEndpointMockA.address, usdcTokenA.address, 8, warlock.address], { initializer: 'initialize' })
+        ONFT_B = await upgrades.deployProxy(ONFT, [name, symbol, minGasToStore, lzEndpointMockB.address, usdcTokenB.address, 8, warlock.address], { initializer: 'initialize' })
 
         // wire the lz endpoints to guide msgs back and forth
         lzEndpointMockA.setDestLzEndpoint(ONFT_B.address, lzEndpointMockB.address)
@@ -43,12 +44,12 @@ describe.only("CedenMintPass: ", function () {
 
         // FIXME: this is a hack to get the tests to pass
         // // set batch size limit
-        // await ONFT_A.setDstChainIdToBatchLimit(chainId_B, batchSizeLimit)
-        // await ONFT_B.setDstChainIdToBatchLimit(chainId_A, batchSizeLimit)
+        await ONFT_A.setDstChainIdToBatchLimit(chainId_B, batchSizeLimit)
+        await ONFT_B.setDstChainIdToBatchLimit(chainId_A, batchSizeLimit)
         //
         // // set min dst gas for swap
-        // await ONFT_A.setMinDstGas(chainId_B, 1, 150000)
-        // await ONFT_B.setMinDstGas(chainId_A, 1, 150000)
+        await ONFT_A.setMinDstGas(chainId_B, 1, 150000)
+        await ONFT_B.setMinDstGas(chainId_A, 1, 150000)
 
     })
 

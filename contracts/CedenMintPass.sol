@@ -2,7 +2,8 @@
 
 pragma solidity ^0.8.0;
 
-import "@layerzerolabs/solidity-examples/contracts/contracts-upgradable/token/ONFT721/ONFT721Upgradeable.sol";
+
+import "@layerzerolabs/solidity-examples/contracts/contracts-upgradable/token/onft/ERC721/ONFT721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
@@ -24,8 +25,8 @@ contract CedenMintPass is Initializable, ONFT721Upgradeable, ERC2981Upgradeable,
     uint public MAX_MINT_ID;
     string public baseTokenURI;
 
-    function initialize(string memory _name, string memory _symbol, address _layerZeroEndpoint, address _stableTokenAddress, uint _stableTokenDecimals,  address _feeCollectorAddress) public initializer {
-        __ONFT721Upgradeable_init(_name, _symbol, _layerZeroEndpoint);
+    function initialize(string memory _name, string memory _symbol, uint256 _minGasToStore, address _layerZeroEndpoint, address _stableTokenAddress, uint _stableTokenDecimals,  address _feeCollectorAddress) public initializer {
+        __ONFT721Upgradeable_init(_name, _symbol, _minGasToStore, _layerZeroEndpoint);
         __ERC2981_init();
         __RevokableDefaultOperatorFilterer_init();
         __Ownable_init();
