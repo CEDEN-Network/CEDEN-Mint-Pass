@@ -4,7 +4,7 @@ const Web3 = require("web3")
 const web3 = new Web3()
 
 
-describe.only("CedenMintPass: ", function () {
+describe("CedenMintPass: ", function () {
     const chainId_A = 1
     const chainId_B = 2
     const name = "CedenMintPass"
