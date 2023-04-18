@@ -1,4 +1,5 @@
 import { ethers, upgrades } from "hardhat";
+import config from "../config";
 
 async function main() {
   const CedenMintPassV1 = await ethers.getContractFactory("CedenMintPassV1");
@@ -6,10 +7,10 @@ async function main() {
     "CEDEN Mint Pass",
     "CMP",
     150000,
-    "0x66A71Dcef29A0fFBDBE3c6a460a3B5BC225Cd675", // lz endpoint
-    "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", // usdc
-    6,
-    "0x93E716Bb3F1CC5c37d07AD6CD10c2681447AF880", // fee receiver
+    config.LZ_ENDPOINT,
+    config.USDC_ADDRESS,
+    config.USDC_DECIMALS,
+    config.FEE_RECEIVER,
   ],
     { initializer: 'initialize' },
   );
