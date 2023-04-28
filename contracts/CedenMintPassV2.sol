@@ -9,7 +9,12 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeab
 import "@openzeppelin/contracts-upgradeable/token/common/ERC2981Upgradeable.sol";
 import "operator-filter-registry/src/upgradeable/RevokableDefaultOperatorFiltererUpgradeable.sol";
 
-contract CedenMintPassV2 is Initializable, ONFT721Upgradeable, ERC2981Upgradeable, RevokableDefaultOperatorFiltererUpgradeable {
+contract CedenMintPassV2 is
+    Initializable,
+    ONFT721Upgradeable,
+    ERC2981Upgradeable,
+    RevokableDefaultOperatorFiltererUpgradeable
+{
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
     mapping(address => uint) public freeMintList;
@@ -25,7 +30,15 @@ contract CedenMintPassV2 is Initializable, ONFT721Upgradeable, ERC2981Upgradeabl
     uint public maxMintId;
     string public baseTokenURI;
 
-    function initialize(string memory _name, string memory _symbol, uint256 _minGasToStore, address _layerZeroEndpoint, address _stableTokenAddress, uint _stableTokenDecimals,  address _feeCollectorAddress) public initializer {
+    function initialize(
+        string memory _name,
+        string memory _symbol,
+        uint256 _minGasToStore,
+        address _layerZeroEndpoint,
+        address _stableTokenAddress,
+        uint _stableTokenDecimals,
+        address _feeCollectorAddress
+    ) public initializer {
         __ONFT721Upgradeable_init(_name, _symbol, _minGasToStore, _layerZeroEndpoint);
         __ERC2981_init();
         __RevokableDefaultOperatorFilterer_init();
@@ -33,7 +46,7 @@ contract CedenMintPassV2 is Initializable, ONFT721Upgradeable, ERC2981Upgradeabl
         stableToken = IERC20Upgradeable(_stableTokenAddress);
         feeCollectorAddress = _feeCollectorAddress;
         exclusiveWindow = true;
-        price = 500 * 10**_stableTokenDecimals;
+        price = 500 * 10 ** _stableTokenDecimals;
         nextMintId = 0;
         maxMintId = 4444;
         _setDefaultRoyalty(feeCollectorAddress, 269);
@@ -43,21 +56,13 @@ contract CedenMintPassV2 is Initializable, ONFT721Upgradeable, ERC2981Upgradeabl
         return baseTokenURI;
     }
 
-    function supportsInterface(bytes4 interfaceId)
-    public
-    view
-    override(ONFT721Upgradeable, ERC2981Upgradeable)
-    returns (bool)
-    {
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view override(ONFT721Upgradeable, ERC2981Upgradeable) returns (bool) {
         return ONFT721Upgradeable.supportsInterface(interfaceId) || ERC2981Upgradeable.supportsInterface(interfaceId);
     }
 
-    function owner()
-    public
-    view
-    override(OwnableUpgradeable, RevokableOperatorFiltererUpgradeable)
-    returns (address)
-    {
+    function owner() public view override(OwnableUpgradeable, RevokableOperatorFiltererUpgradeable) returns (address) {
         return OwnableUpgradeable.owner();
     }
 
@@ -66,55 +71,54 @@ contract CedenMintPassV2 is Initializable, ONFT721Upgradeable, ERC2981Upgradeabl
         return _baseURI();
     }
 
-    function setApprovalForAll(address operator, bool approved)
-    public
-    override(ERC721Upgradeable, IERC721Upgradeable)
-    onlyAllowedOperatorApproval(operator)
-    {
+    function setApprovalForAll(
+        address operator,
+        bool approved
+    ) public override(ERC721Upgradeable, IERC721Upgradeable) onlyAllowedOperatorApproval(operator) {
         super.setApprovalForAll(operator, approved);
     }
 
-    function approve(address operator, uint256 tokenId)
-    public
-    override(ERC721Upgradeable, IERC721Upgradeable)
-    onlyAllowedOperatorApproval(operator)
-    {
+    function approve(
+        address operator,
+        uint256 tokenId
+    ) public override(ERC721Upgradeable, IERC721Upgradeable) onlyAllowedOperatorApproval(operator) {
         super.approve(operator, tokenId);
     }
 
-    function transferFrom(address from, address to, uint256 tokenId)
-    public
-    override(ERC721Upgradeable, IERC721Upgradeable)
-    onlyAllowedOperator(from)
-    {
+    function transferFrom(
+        address from,
+        address to,
+        uint256 tokenId
+    ) public override(ERC721Upgradeable, IERC721Upgradeable) onlyAllowedOperator(from) {
         super.transferFrom(from, to, tokenId);
     }
 
-    function safeTransferFrom(address from, address to, uint256 tokenId)
-    public
-    override(ERC721Upgradeable, IERC721Upgradeable)
-    onlyAllowedOperator(from)
-    {
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 tokenId
+    ) public override(ERC721Upgradeable, IERC721Upgradeable) onlyAllowedOperator(from) {
         super.safeTransferFrom(from, to, tokenId);
     }
 
-    function safeTransferFrom(address from, address to, uint256 tokenId, bytes memory data)
-    public
-    override(ERC721Upgradeable, IERC721Upgradeable)
-    onlyAllowedOperator(from)
-    {
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 tokenId,
+        bytes memory data
+    ) public override(ERC721Upgradeable, IERC721Upgradeable) onlyAllowedOperator(from) {
         super.safeTransferFrom(from, to, tokenId, data);
     }
 
     function mint(uint _quantity) external {
         //check if address has free mints left
-        if(freeMintList[msg.sender] >= _quantity) {
+        if (freeMintList[msg.sender] >= _quantity) {
             freeMintList[msg.sender] -= _quantity;
             freeMintsLeft -= _quantity;
         } else {
             // check if in exclusive time window
             // if so only allowed users can mint
-            if(exclusiveWindow) {
+            if (exclusiveWindow) {
                 // check if address is in allowList
                 require(allowList[msg.sender] >= _quantity, "Allow List amount < mint amount");
                 allowList[msg.sender] -= _quantity;
@@ -123,9 +127,11 @@ contract CedenMintPassV2 is Initializable, ONFT721Upgradeable, ERC2981Upgradeabl
             require(nextMintId + _quantity <= maxMintId - freeMintsLeft, "Ceden: Mint exceeds supply");
             stableToken.safeTransferFrom(msg.sender, feeCollectorAddress, price * _quantity);
         }
-        for(uint i; i < _quantity;) {
+        for (uint i; i < _quantity; ) {
             _safeMint(msg.sender, ++nextMintId);
-        unchecked{++i;}
+            unchecked {
+                ++i;
+            }
         }
     }
 

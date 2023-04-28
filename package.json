@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
+  "scripts": {
+    "format": "prettier --write \"contracts/**/*.sol\" \"test/**/*.{ts,js}\" \"scripts/**/*.ts\" \"config/**/*.ts\" hardhat.config.ts"
+  },
   "devDependencies": {
     "@ethersproject/abi": "^5.4.7",
     "@ethersproject/providers": "^5.4.7",
@@ -26,6 +29,8 @@
     "hardhat": "^2.13.0",
     "hardhat-gas-reporter": "^1.0.8",
     "operator-filter-registry": "^1.4.1",
+    "prettier": "^2.8.8",
+    "prettier-plugin-solidity": "^1.1.3",
     "solidity-coverage": "^0.8.0",
     "ts-node": ">=8.0.0",
     "typechain": "^8.1.0",

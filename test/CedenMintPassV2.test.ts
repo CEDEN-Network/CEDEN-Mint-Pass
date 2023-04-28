@@ -5,7 +5,9 @@ describe("CedenMintPassV2", () => {
   it("should upgrade from V1", async () => {
     const [owner] = await ethers.getSigners();
 
-    const LZEndpointMock = await ethers.getContractFactory("CedenLZEndpointMock");
+    const LZEndpointMock = await ethers.getContractFactory(
+      "CedenLZEndpointMock"
+    );
     const lzEndpointMock = await LZEndpointMock.deploy(1);
     await lzEndpointMock.deployed();
 
@@ -25,13 +27,16 @@ describe("CedenMintPassV2", () => {
         8,
         owner.address,
       ],
-      { initializer: "initialize" },
+      { initializer: "initialize" }
     );
     await cedenMintPassV1.deployed();
     const maxMintIdV1 = await cedenMintPassV1.MAX_MINT_ID();
 
     const CedenMintPassV2 = await ethers.getContractFactory("CedenMintPassV2");
-    const cedenMintPassV2 = await upgrades.upgradeProxy(cedenMintPassV1.address, CedenMintPassV2);
+    const cedenMintPassV2 = await upgrades.upgradeProxy(
+      cedenMintPassV1.address,
+      CedenMintPassV2
+    );
     await cedenMintPassV2.deployed();
     const maxMintIdV2 = await cedenMintPassV2.maxMintId();
 

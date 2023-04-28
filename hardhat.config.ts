@@ -1,4 +1,4 @@
-import * as dotenv from 'dotenv';
+import * as dotenv from "dotenv";
 dotenv.config();
 
 import { HardhatUserConfig } from "hardhat/config";
@@ -14,24 +14,30 @@ const config: HardhatUserConfig = {
           optimizer: {
             enabled: true,
             runs: 200,
-          }
-        }
-      }
+          },
+        },
+      },
     ],
   },
   networks: {
     mainnet: {
-      url: process.env.MAINNET_URL ?? '',
-      accounts: process.env.MAINNET_PRIVATE_KEY !== undefined ? [process.env.MAINNET_PRIVATE_KEY] : [],
+      url: process.env.MAINNET_URL ?? "",
+      accounts:
+        process.env.MAINNET_PRIVATE_KEY !== undefined
+          ? [process.env.MAINNET_PRIVATE_KEY]
+          : [],
     },
     goerli: {
-      url: process.env.GOERLI_URL ?? '',
-      accounts: process.env.GOERLI_PRIVATE_KEY !== undefined ? [process.env.GOERLI_PRIVATE_KEY] : [],
-    }
+      url: process.env.GOERLI_URL ?? "",
+      accounts:
+        process.env.GOERLI_PRIVATE_KEY !== undefined
+          ? [process.env.GOERLI_PRIVATE_KEY]
+          : [],
+    },
   },
   etherscan: {
-    apiKey: process.env.ETHERSCAN_API_KEY ?? '',
-  }
+    apiKey: process.env.ETHERSCAN_API_KEY ?? "",
+  },
 };
 
 export default config;
