@@ -7,6 +7,7 @@
     "format": "prettier --write \"contracts/**/*.sol\" \"test/**/*.{ts,js}\" \"scripts/**/*.ts\" \"config/**/*.ts\" hardhat.config.ts"
   },
   "devDependencies": {
+    "@defi-wonderland/smock": "^2.3.4",
     "@ethersproject/abi": "^5.4.7",
     "@ethersproject/providers": "^5.4.7",
     "@layerzerolabs/solidity-examples": "^0.0.10",
